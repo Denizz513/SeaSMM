@@ -3,11 +3,15 @@ from discord.ext import commands
 from config import TOKEN
 from utils import db
 
-# Slash komutlarını desteklemek için tanımlama
+import asyncio
+
+# 🔧 Flask sunucusu için:
+from keep_alive import keep_alive
+keep_alive()
+
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# Slash komutlarını senkronize et
 @bot.event
 async def on_ready():
     print(f"✅ Bot aktif: {bot.user}")
@@ -17,7 +21,6 @@ async def on_ready():
     except Exception as e:
         print(f"❌ Komut senkronizasyon hatası: {e}")
 
-# Komut dosyalarını yükle
 async def load_extensions():
     extensions = [
         "commands.kredi",
@@ -36,14 +39,9 @@ async def load_extensions():
         except Exception as e:
             print(f"❌ {ext} yüklenemedi: {e}")
 
-# Botu başlat
 async def main():
     db.load_data()
     await load_extensions()
     await bot.start(TOKEN)
 
-# Python 3.7+ destekli ana giriş
-import asyncio
 asyncio.run(main())
-
-
