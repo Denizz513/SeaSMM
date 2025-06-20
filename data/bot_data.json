@@ -1,0 +1,51 @@
+{
+    "user_credits": {
+        "1374472023199318077": 836.0,
+        "1105511285132636161": 222
+    },
+    "pending_requests": {},
+    "products": {
+        "i1181": {
+            "service_id": 1181,
+            "fiyat": 35.0
+        },
+        "i1356": {
+            "service_id": 1356,
+            "fiyat": 45.0
+        },
+        "i1357": {
+            "service_id": 1357,
+            "fiyat": 55.0
+        },
+        "i1348": {
+            "service_id": 1348,
+            "fiyat": 145.0
+        }
+    },
+    "orders": {
+        "1374472023199318077": [
+            {
+                "urun": "instagram takipçi",
+                "kullanici": "denemeuser",
+                "adet": 1000,
+                "fiyat": 12.5,
+                "siparis_id": 111222333
+            },
+            {
+                "urun": "deneme",
+                "kullanici": "https://aysegndz03",
+                "adet": 50,
+                "siparis_id": 8496,
+                "fiyat": 5.0
+            },
+            {
+                "urun": "deneme2",
+                "kullanici": "instagram.com/p/DLAUBWozv9gi0dlzwxIx0sAu8p1psgHoALB3rE0/",
+                "adet": 50,
+                "siparis_id": 8497,
+                "fiyat": 5.0
+            }
+        ]
+    },
+    "bakim_modu": false
+}

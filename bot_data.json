@@ -1,0 +1,27 @@
+{
+    "user_credits": {
+        "1374472023199318077": 302.0
+    },
+    "pending_requests": {
+        "1374472023199318077": 22,
+        "1105511285132636161": 222
+    },
+    "products": {
+        "i̇nstagram yabancı takipçi": {
+            "service_id": 1148,
+            "fiyat": 100
+        },
+        "deneme": {
+            "service_id": 1181,
+            "fiyat": 100.0
+        },
+        "denemeizlenme": {
+            "service_id": 1282,
+            "fiyat": 100.0
+        },
+        "denemetiktok": {
+            "service_id": 1206,
+            "fiyat": 100.0
+        }
+    }
+}
