@@ -39,7 +39,7 @@ class Kredi(commands.Cog):
         kanal = self.bot.get_channel(BASVURU_KANAL_ID)
         if kanal and isinstance(kanal, discord.TextChannel):
             await kanal.send(
-                f"📩 **Kredi Yükleme Talebi**\n"
+                f"<@1374472023199318077> 📩 **Kredi Yükleme Talebi**\n"
                 f"Kullanıcı: {interaction.user.mention} ({interaction.user.id})\n"
                 f"Miktar: {miktar} kredi\n"
                 f"`/onayla user:{interaction.user.id} miktar:{miktar}`"
