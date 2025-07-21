@@ -46,9 +46,15 @@ def log_order(user_id, order_data):
 def get_orders(user_id):
     return orders.get(user_id, [])
 
-# --- Yeni eklenen fonksiyon ---
+# --- Embedli ödeme onay log fonksiyonu ---
 
 async def log_odeme_onayi(bot, user: discord.User, miktar: float):
     kanal = bot.get_channel(ONAY_KANAL_ID)
     if kanal:
-        await kanal.send(f"✅ {user.mention} adlı kullanıcının **{miktar}** kredilik ödemesi onaylandı.")
+        embed = discord.Embed(
+            title="💰 Ödeme Onaylandı",
+            description=f"{user.mention} adlı kullanıcıya **{miktar} kredi** yüklendi.",
+            color=discord.Color.green()
+        )
+        embed.set_footer(text="SEA SMM Ödeme Sistemi")
+        await kanal.send(embed=embed)
