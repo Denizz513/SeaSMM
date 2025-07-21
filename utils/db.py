@@ -1,6 +1,7 @@
 import json
 import os
-from config import DATA_FILE
+import discord
+from config import DATA_FILE, ONAY_KANAL_ID
 
 user_credits = {}
 pending_requests = {}
@@ -45,3 +46,9 @@ def log_order(user_id, order_data):
 def get_orders(user_id):
     return orders.get(user_id, [])
 
+# --- Yeni eklenen fonksiyon ---
+
+async def log_odeme_onayi(bot, user: discord.User, miktar: float):
+    kanal = bot.get_channel(ONAY_KANAL_ID)
+    if kanal:
+        await kanal.send(f"✅ {user.mention} adlı kullanıcının **{miktar}** kredilik ödemesi onaylandı.")
