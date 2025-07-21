@@ -32,6 +32,7 @@ async def load_extensions():
         "commands.bakim",
         "commands.urunler",
         "commands.datajson",
+        "commands.bakim_durum",
     ]
     for ext in extensions:
         try:
