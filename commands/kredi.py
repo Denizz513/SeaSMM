@@ -88,7 +88,7 @@ class Kredi(commands.Cog):
         onay_kanal = self.bot.get_channel(ONAY_KANAL_ID)
         if onay_kanal and isinstance(onay_kanal, discord.TextChannel):
             embed = discord.Embed(
-                title="✅ Ödeme Onayı",
+                title="✅ Ödeme Onaylandı",
                 description=(
                     f"Kullanıcı: {user.mention} ({user.id})\n"
                     f"Yüklenen Kredi: **{miktar} kredi**\n"
