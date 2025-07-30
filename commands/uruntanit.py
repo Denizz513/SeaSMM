@@ -24,11 +24,10 @@ class UrunTanitim(commands.Cog):
         try:
             with open("data/bot_data.json", "r") as f:
                 data = json.load(f)
-        except Exception as e:
+        except Exception:
             await interaction.response.send_message("❌ Ürün veritabanı okunamadı.", ephemeral=True)
             return
 
-        # Ürün ID kontrolü
         urun = data["products"].get(urun_id)
         if not urun:
             await interaction.response.send_message("❌ Ürün ID bulunamadı.", ephemeral=True)
@@ -38,7 +37,6 @@ class UrunTanitim(commands.Cog):
         fiyat = urun["fiyat"]
         aciklama = urun.get("aciklama", "Açıklama girilmemiş.")
 
-        # LunaSMM'den servis bilgilerini çek
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(API_URL, data={
@@ -49,25 +47,22 @@ class UrunTanitim(commands.Cog):
                         await interaction.response.send_message("❌ LunaSMM API bağlantı hatası.", ephemeral=True)
                         return
                     services = await response.json()
-            except Exception as e:
+            except Exception:
                 await interaction.response.send_message("❌ LunaSMM API verisi alınamadı.", ephemeral=True)
                 return
 
-        # Hizmet bilgisi bul
         service_info = next((s for s in services if str(s["service"]) == str(service_id)), None)
         if not service_info:
             await interaction.response.send_message("❌ Ürün bilgileri LunaSMM'den çekilemedi.", ephemeral=True)
             return
 
-        # %40 zam ekle
         zamli_fiyat = round(fiyat * 1.4, 2)
 
-        # Embed oluştur
         embed = discord.Embed(
             title=f"🛒 Ürün Tanıtımı — {urun_id}",
             color=discord.Color.blurple()
         )
-        embed.add_field(name="Ürün İsmi", value=service_info["name"], inline=False)
+        embed.add_field(name="Ürün Adı", value=service_info["name"], inline=False)
         embed.add_field(name="Açıklama", value=aciklama, inline=False)
         embed.add_field(name="Kategori", value=service_info.get("category", "Kategori bulunamadı"), inline=False)
         embed.add_field(name="Min - Max", value=f"{service_info['min']} - {service_info['max']}", inline=True)
