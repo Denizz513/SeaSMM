@@ -1,32 +1,7 @@
 {
   "user_credits": {},
   "pending_requests": {},
-  "products": {
-    "i1570": {
-      "service_id": 1570,
-      "fiyat": 29.9154
-    },
-    "i987": {
-      "service_id": 987,
-      "fiyat": 34.2435
-    },
-    "i989": {
-      "service_id": 989,
-      "fiyat": 35.3306
-    },
-    "i991": {
-      "service_id": 991,
-      "fiyat": 36.4177
-    },
-    "i992": {
-      "service_id": 992,
-      "fiyat": 37.5048
-    },
-    "i1501": {
-      "service_id": 1501,
-      "fiyat": 38.3322
-    }
-  },
+  "products": {},
   "orders": {},
   "bakim_modu": false
 }
