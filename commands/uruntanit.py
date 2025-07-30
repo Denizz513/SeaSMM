@@ -6,14 +6,14 @@ import os
 
 API_KEY = os.getenv("API_KEY")
 API_URL = os.getenv("API_URL")
-ADMIN_ID = 1374472023199318077  # Senin ID
+ADMIN_ID = 1374472023199318077  # senin admin ID
 
 class UrunTanit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.slash_command(name="uruntanit", description="Bir ürünün tanıtımını yapar.")
-    async def urun_tanit(self, ctx, urun_id: str):
+    @commands.slash_command(name="uruntanit", description="Belirtilen ürünün tanıtımını yapar.")
+    async def uruntanit(self, ctx, urun_id: str):
         if ctx.author.id != ADMIN_ID:
             await ctx.respond("❌ Bu komutu kullanma yetkin yok.", ephemeral=True)
             return
@@ -36,31 +36,31 @@ class UrunTanit(commands.Cog):
         async with aiohttp.ClientSession() as session:
             try:
                 headers = {"Authorization": API_KEY}
-                async with session.post(API_URL, data={"action": "services"}, headers=headers) as resp:
-                    services = await resp.json()
-            except Exception:
-                await ctx.respond("❌ Ürün bilgileri LunaSMM'den çekilemedi.")
+                async with session.post(API_URL, data={"action": "services"}, headers=headers) as response:
+                    services = await response.json()
+            except Exception as e:
+                await ctx.respond("❌ LunaSMM API bağlantısında hata oluştu.")
                 return
 
-        servis_detay = next((s for s in services if str(s.get("service")) == str(service_id)), None)
-        if not servis_detay:
+        service_data = next((s for s in services if str(s.get("service")) == str(service_id)), None)
+        if not service_data:
             await ctx.respond("❌ Ürün bilgileri çekilemedi.")
             return
 
-        urun_adi = servis_detay.get("name", "Bilinmiyor")
-        aciklama = servis_detay.get("description", "Açıklama yok.")
-        min_amount = servis_detay.get("min", "Bilinmiyor")
-        max_amount = servis_detay.get("max", "Bilinmiyor")
+        urun_adi = service_data.get("name", "Ürün Adı Bulunamadı")
+        aciklama = service_data.get("description", "Açıklama bulunamadı.")
+        min_amount = service_data.get("min", "Belirtilmemiş")
+        max_amount = service_data.get("max", "Belirtilmemiş")
 
         embed = discord.Embed(
-            title=f"📌 Ürün: {urun_adi}",
-            description=f"📃 {aciklama}",
-            color=discord.Color.green()
+            title=f"📌 {urun_adi}",
+            description=f"📄 {aciklama}",
+            color=discord.Color.blue()
         )
-        embed.add_field(name="🔢 Minimum", value=str(min_amount), inline=True)
-        embed.add_field(name="🔝 Maksimum", value=str(max_amount), inline=True)
-        embed.add_field(name="💸 Fiyat", value=f"{fiyat:.2f}₺", inline=True)
-        embed.add_field(name="🆔 Servis ID", value=urun_id, inline=False)
+        embed.add_field(name="💸 Fiyat", value=f"{fiyat}₺", inline=True)
+        embed.add_field(name="🔽 Minimum", value=str(min_amount), inline=True)
+        embed.add_field(name="🔼 Maksimum", value=str(max_amount), inline=True)
+        embed.add_field(name="🆔 Ürün ID", value=urun_id, inline=False)
 
         await ctx.respond(embed=embed)
 
