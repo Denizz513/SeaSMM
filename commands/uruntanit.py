@@ -2,78 +2,63 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import aiohttp
-import os
 import json
+import os
 
 class UrunTanit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api_key = os.getenv("API_KEY")
-        self.api_url = os.getenv("API_URL") or "https://lunasmm.net/api/v2"
+        self.api_url = os.getenv("API_URL")
 
-        # JSON dosya yolu
-        self.data_path = "data/bot_data.json"
-        # JSON verisini yükle
-        with open(self.data_path, "r", encoding="utf-8") as f:
-            self.data = json.load(f)
-
-    async def fetch_product_info(self, service_id):
-        headers = {
-            "Authorization": f"Bearer {self.api_key}"
-        }
-        url = f"{self.api_url}/services/{service_id}"
+    async def get_service_info(self, service_id):
+        headers = {"Authorization": self.api_key}
+        params = {"type": "services"}
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers) as resp:
+            async with session.get(self.api_url, headers=headers, params=params) as resp:
                 if resp.status == 200:
-                    return await resp.json()
-                else:
-                    return None
+                    data = await resp.json()
+                    for service in data:
+                        if service["service"] == service_id:
+                            return service
+        return None
 
-    @app_commands.command(name="uruntanit", description="Ürün ID ile LunaSMM'den ürün bilgisi gösterir.")
-    @app_commands.describe(id="Ürün ID'si (örn: i1570)")
-    async def uruntanit(self, interaction: discord.Interaction, id: str):
-        await interaction.response.defer()
-
-        # JSON dosyandaki fiyatları kontrol et
-        fiyat = None
-        if id in self.data["products"]:
-            fiyat = self.data["products"][id].get("fiyat")
-
-        if not id.startswith(("i","t")):
-            await interaction.followup.send("Ürün ID'si 'i' veya 't' ile başlamalıdır. Örn: i1570")
+    @app_commands.command(name="uruntanit", description="Belirtilen ürünün açıklamasını gösterir.")
+    async def uruntanit(self, interaction: discord.Interaction, urun_id: str):
+        # Sadece admin izni olanlar kullanabilsin
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message("❌ Bu komutu sadece **yöneticiler** kullanabilir.", ephemeral=True)
             return
 
-        # LunaSMM servis ID al (harfi çıkar)
         try:
-            service_id = int(id[1:])
-        except:
-            await interaction.followup.send("Geçersiz ürün ID formatı.")
-            return
+            with open("data/bot_data.json", "r") as f:
+                data = json.load(f)
 
-        # LunaSMM API'den veri çek
-        product_info = await self.fetch_product_info(service_id)
-        if not product_info:
-            await interaction.followup.send("Ürün bilgisi alınamadı. ID doğru mu kontrol et.")
-            return
+            product_data = data["products"].get(urun_id)
+            if not product_data:
+                await interaction.response.send_message("❌ Geçersiz ürün ID'si.", ephemeral=True)
+                return
 
-        # Embed hazırla
-        embed = discord.Embed(
-            title=product_info.get("name", "Ürün"),
-            description=product_info.get("description", "Açıklama yok"),
-            color=discord.Color.green()
-        )
+            service_id = product_data["service_id"]
+            service_info = await self.get_service_info(service_id)
 
-        # Fiyat JSON dosyadan al, yoksa LunaSMM API fiyatını göster
-        api_price = product_info.get("min_amount", "Bilinmiyor")
-        embed.add_field(name="Fiyat", value=f"{fiyat if fiyat is not None else api_price} TL", inline=True)
+            if not service_info:
+                await interaction.response.send_message("❌ Ürün bilgileri çekilemedi.", ephemeral=True)
+                return
 
-        # Min/Max adet gibi bilgileri LunaSMM API'den ekle
-        min_amount = product_info.get("min_amount", "Bilinmiyor")
-        max_amount = product_info.get("max_amount", "Bilinmiyor")
-        embed.add_field(name="Minimum Sipariş", value=str(min_amount), inline=True)
-        embed.add_field(name="Maksimum Sipariş", value=str(max_amount), inline=True)
+            embed = discord.Embed(
+                title=f"{service_info['name']}",
+                description=f"**Açıklama:** {service_info.get('description', 'Yok')}\n"
+                            f"**Min:** {service_info.get('min', 'Bilinmiyor')} | "
+                            f"**Max:** {service_info.get('max', 'Bilinmiyor')}\n"
+                            f"**Fiyat:** {product_data['fiyat']}₺",
+                color=discord.Color.purple()
+            )
 
-        await interaction.followup.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
+
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Bir hata oluştu: {str(e)}", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(UrunTanit(bot))
