@@ -7,7 +7,7 @@ import os
 
 API_KEY = os.getenv("API_KEY")
 API_URL = os.getenv("API_URL")  # örn: https://lunasmm.net/api/v2
-ADMIN_ID = 1374472023199318077  # senin id
+ADMIN_ID = 1374472023199318077  # senin ID
 
 class UrunTanit(commands.Cog):
     def __init__(self, bot):
@@ -20,9 +20,11 @@ class UrunTanit(commands.Cog):
             await interaction.response.send_message("❌ Yetkin yok.", ephemeral=True)
             return
 
-        # data.json oku
+        # Doğru yoldan data/bot_data.json dosyasını oku
         try:
-            with open("data.json", "r", encoding="utf-8") as f:
+            data_path = os.path.join(os.path.dirname(__file__), "..", "data", "bot_data.json")
+            data_path = os.path.abspath(data_path)
+            with open(data_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except Exception:
             await interaction.response.send_message("❌ Data dosyası bulunamadı.", ephemeral=True)
@@ -35,6 +37,7 @@ class UrunTanit(commands.Cog):
 
         service_id = urun.get("service_id")
         fiyat = urun.get("fiyat")
+        urun_adi_local = urun.get("ad", "Ad yok")  # JSON içindeki ürün adı
 
         # LunaSMM API'den açıklama çek
         headers = {"Authorization": API_KEY}
@@ -57,12 +60,15 @@ class UrunTanit(commands.Cog):
             await interaction.response.send_message("❌ LunaSMM'den ürün bilgisi alınamadı.", ephemeral=True)
             return
 
-        urun_adi = service_data.get("name", "Ad yok")
         aciklama = service_data.get("description", "Açıklama yok")
         min_ = service_data.get("min", "Bilinmiyor")
         max_ = service_data.get("max", "Bilinmiyor")
 
-        embed = discord.Embed(title=urun_adi, description=aciklama, color=discord.Color.blue())
+        embed = discord.Embed(
+            title=urun_adi_local,
+            description=aciklama,
+            color=discord.Color.blue()
+        )
         embed.add_field(name="Fiyat", value=f"{fiyat}₺", inline=True)
         embed.add_field(name="Min", value=min_, inline=True)
         embed.add_field(name="Max", value=max_, inline=True)
