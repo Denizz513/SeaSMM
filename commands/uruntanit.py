@@ -36,8 +36,9 @@ class UrunTanitim(commands.Cog):
 
         service_id = urun["service_id"]
         fiyat = urun["fiyat"]
+        aciklama = urun.get("aciklama", "Açıklama girilmemiş.")
 
-        # LunaSMM'den açıklama çekme
+        # LunaSMM'den servis bilgilerini çek
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(API_URL, data={
@@ -58,15 +59,19 @@ class UrunTanitim(commands.Cog):
             await interaction.response.send_message("❌ Ürün bilgileri LunaSMM'den çekilemedi.", ephemeral=True)
             return
 
+        # %40 zam ekle
+        zamli_fiyat = round(fiyat * 1.4, 2)
+
         # Embed oluştur
         embed = discord.Embed(
             title=f"🛒 Ürün Tanıtımı — {urun_id}",
-            color=discord.Color.blue()
+            color=discord.Color.blurple()
         )
-        embed.add_field(name="Açıklama", value=service_info["name"], inline=False)
-        embed.add_field(name="Fiyat", value=f"{fiyat:.2f}₺", inline=True)
-        embed.add_field(name="Minimum", value=service_info["min"], inline=True)
-        embed.add_field(name="Maksimum", value=service_info["max"], inline=True)
+        embed.add_field(name="Ürün İsmi", value=service_info["name"], inline=False)
+        embed.add_field(name="Açıklama", value=aciklama, inline=False)
+        embed.add_field(name="Kategori", value=service_info.get("category", "Kategori bulunamadı"), inline=False)
+        embed.add_field(name="Min - Max", value=f"{service_info['min']} - {service_info['max']}", inline=True)
+        embed.add_field(name="Fiyat", value=f"{zamli_fiyat:.2f}₺ / 1K", inline=True)
         embed.set_footer(text="SEA PRIVATE")
 
         await interaction.response.send_message(embed=embed)
