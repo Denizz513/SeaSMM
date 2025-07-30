@@ -1,75 +1,68 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
 import json
 import aiohttp
 import os
 
 API_KEY = os.getenv("API_KEY")
-API_URL = os.getenv("API_URL")  # örnek: "https://lunasmm.net/api/v2"
-ADMIN_ID = 1374472023199318077  # sadece bu ID komutu kullanabilir
+API_URL = os.getenv("API_URL")
+ADMIN_ID = 1374472023199318077  # Senin ID
 
-class UrunTanitim(commands.Cog):
+class UrunTanit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="uruntanit", description="Ürün ID'si ile ürün bilgilerini gösterir.")
-    @app_commands.describe(urun_id="Ürünün ID'si (örn: i1570)")
-    async def uruntanit(self, interaction: discord.Interaction, urun_id: str):
-        if interaction.user.id != ADMIN_ID:
-            await interaction.response.send_message("❌ Bu komutu sadece yetkililer kullanabilir.", ephemeral=True)
+    @commands.slash_command(name="uruntanit", description="Bir ürünün tanıtımını yapar.")
+    async def urun_tanit(self, ctx, urun_id: str):
+        if ctx.author.id != ADMIN_ID:
+            await ctx.respond("❌ Bu komutu kullanma yetkin yok.", ephemeral=True)
             return
 
-        # JSON dosyasını oku
         try:
-            with open("data/bot_data.json", "r") as f:
+            with open("data.json", "r", encoding="utf-8") as f:
                 data = json.load(f)
-        except Exception as e:
-            await interaction.response.send_message("❌ Ürün veritabanı okunamadı.", ephemeral=True)
+        except FileNotFoundError:
+            await ctx.respond("❌ data.json dosyası bulunamadı.")
             return
 
-        # Ürün ID kontrolü
-        urun = data["products"].get(urun_id)
-        if not urun:
-            await interaction.response.send_message("❌ Ürün ID bulunamadı.", ephemeral=True)
+        urun_bilgi = data.get("products", {}).get(urun_id)
+        if not urun_bilgi:
+            await ctx.respond("❌ Bu ürün ID'si bulunamadı.")
             return
 
-        service_id = urun["service_id"]
-        fiyat = urun["fiyat"]
+        service_id = urun_bilgi.get("service_id")
+        fiyat = urun_bilgi.get("fiyat")
 
-        # LunaSMM'den açıklama çekme
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(API_URL, data={
-                    "key": API_KEY,
-                    "action": "services"
-                }) as response:
-                    if response.status != 200:
-                        await interaction.response.send_message("❌ LunaSMM API bağlantı hatası.", ephemeral=True)
-                        return
-                    services = await response.json()
-            except Exception as e:
-                await interaction.response.send_message("❌ LunaSMM API verisi alınamadı.", ephemeral=True)
+                headers = {"Authorization": API_KEY}
+                async with session.post(API_URL, data={"action": "services"}, headers=headers) as resp:
+                    services = await resp.json()
+            except Exception:
+                await ctx.respond("❌ Ürün bilgileri LunaSMM'den çekilemedi.")
                 return
 
-        # Hizmet bilgisi bul
-        service_info = next((s for s in services if str(s["service"]) == str(service_id)), None)
-        if not service_info:
-            await interaction.response.send_message("❌ Ürün bilgileri LunaSMM'den çekilemedi.", ephemeral=True)
+        servis_detay = next((s for s in services if str(s.get("service")) == str(service_id)), None)
+        if not servis_detay:
+            await ctx.respond("❌ Ürün bilgileri çekilemedi.")
             return
 
-        # Embed oluştur
+        urun_adi = servis_detay.get("name", "Bilinmiyor")
+        aciklama = servis_detay.get("description", "Açıklama yok.")
+        min_amount = servis_detay.get("min", "Bilinmiyor")
+        max_amount = servis_detay.get("max", "Bilinmiyor")
+
         embed = discord.Embed(
-            title=f"🛒 Ürün Tanıtımı — {urun_id}",
-            color=discord.Color.blue()
+            title=f"📌 Ürün: {urun_adi}",
+            description=f"📃 {aciklama}",
+            color=discord.Color.green()
         )
-        embed.add_field(name="Açıklama", value=service_info["name"], inline=False)
-        embed.add_field(name="Fiyat", value=f"{fiyat:.2f}₺", inline=True)
-        embed.add_field(name="Minimum", value=service_info["min"], inline=True)
-        embed.add_field(name="Maksimum", value=service_info["max"], inline=True)
-        embed.set_footer(text="SEA PRIVATE")
+        embed.add_field(name="🔢 Minimum", value=str(min_amount), inline=True)
+        embed.add_field(name="🔝 Maksimum", value=str(max_amount), inline=True)
+        embed.add_field(name="💸 Fiyat", value=f"{fiyat:.2f}₺", inline=True)
+        embed.add_field(name="🆔 Servis ID", value=urun_id, inline=False)
 
-        await interaction.response.send_message(embed=embed)
+        await ctx.respond(embed=embed)
 
-async def setup(bot):
-    await bot.add_cog(UrunTanitim(bot))
+def setup(bot):
+    bot.add_cog(UrunTanit(bot))
