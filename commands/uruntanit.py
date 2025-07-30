@@ -6,8 +6,8 @@ import aiohttp
 import os
 
 API_KEY = os.getenv("API_KEY")
-API_URL = os.getenv("API_URL")  # örn: https://lunasmm.net/api/v2
-ADMIN_ID = 1374472023199318077  # senin ID
+API_URL = os.getenv("API_URL")  # Örn: https://lunasmm.net/api/v2
+ADMIN_ID = 1374472023199318077  # Senin Discord ID
 
 class UrunTanit(commands.Cog):
     def __init__(self, bot):
@@ -20,11 +20,9 @@ class UrunTanit(commands.Cog):
             await interaction.response.send_message("❌ Yetkin yok.", ephemeral=True)
             return
 
-        # Doğru yoldan data/bot_data.json dosyasını oku
+        # JSON dosyasını oku
         try:
-            data_path = os.path.join(os.path.dirname(__file__), "..", "data", "bot_data.json")
-            data_path = os.path.abspath(data_path)
-            with open(data_path, "r", encoding="utf-8") as f:
+            with open("data/bot_data.json", "r", encoding="utf-8") as f:
                 data = json.load(f)
         except Exception:
             await interaction.response.send_message("❌ Data dosyası bulunamadı.", ephemeral=True)
@@ -37,41 +35,42 @@ class UrunTanit(commands.Cog):
 
         service_id = urun.get("service_id")
         fiyat = urun.get("fiyat")
-        urun_adi_local = urun.get("ad", "Ad yok")  # JSON içindeki ürün adı
 
-        # LunaSMM API'den açıklama çek
+        # LunaSMM API'den servis verilerini çek
         headers = {"Authorization": API_KEY}
         payload = {"action": "services"}
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(API_URL, data=payload, headers=headers) as resp:
                     services = await resp.json()
-        except Exception:
+        except Exception as e:
+            print(f"[API ERROR] {e}")
             await interaction.response.send_message("❌ LunaSMM API hatası.", ephemeral=True)
             return
 
-        service_data = None
-        for s in services:
-            if str(s.get("service")) == str(service_id):
-                service_data = s
-                break
+        # Debug log
+        print(f"[DEBUG] {service_id} ID'li ürün API'den çekiliyor...")
+        print(f"[DEBUG] Toplam servis sayısı: {len(services)}")
+
+        service_data = next((s for s in services if str(s.get("service")) == str(service_id)), None)
+        print(f"[DEBUG] Bulunan servis: {service_data}")
 
         if not service_data:
             await interaction.response.send_message("❌ LunaSMM'den ürün bilgisi alınamadı.", ephemeral=True)
             return
 
-        aciklama = service_data.get("description", "Açıklama yok")
+        urun_adi = service_data.get("name", "Ad yok")
         min_ = service_data.get("min", "Bilinmiyor")
         max_ = service_data.get("max", "Bilinmiyor")
 
         embed = discord.Embed(
-            title=urun_adi_local,
-            description=aciklama,
+            title=urun_adi,
+            description="Bu ürün hakkında detaylar aşağıdadır.",
             color=discord.Color.blue()
         )
         embed.add_field(name="Fiyat", value=f"{fiyat}₺", inline=True)
-        embed.add_field(name="Min", value=min_, inline=True)
-        embed.add_field(name="Max", value=max_, inline=True)
+        embed.add_field(name="Min", value=str(min_), inline=True)
+        embed.add_field(name="Max", value=str(max_), inline=True)
         embed.add_field(name="Ürün ID", value=urun_id, inline=False)
 
         await interaction.response.send_message(embed=embed)
