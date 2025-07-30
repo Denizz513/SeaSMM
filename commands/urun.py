@@ -65,12 +65,15 @@ class Urun(commands.Cog):
         kategori = service_info.get("category", "Bilinmiyor")
 
         await interaction.response.send_message(
-            f"📝 Lütfen `{isim}` ürünü için açıklamayı DM'den yaz. 2 dakika içinde yazmazsan iptal olur.",
+            f"📝 Lütfen ürün açıklamasını bu kanala yazınız. 2 dakika içinde yazmazsanız işlem iptal olur.",
             ephemeral=True
         )
 
         def check(m):
-            return m.author.id == interaction.user.id and isinstance(m.channel, discord.DMChannel)
+            return (
+                m.author.id == interaction.user.id
+                and m.channel.id == interaction.channel.id
+            )
 
         try:
             mesaj = await self.bot.wait_for("message", timeout=120, check=check)
