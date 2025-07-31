@@ -67,7 +67,7 @@ class UrunTanitim(commands.Cog):
         embed.add_field(name="Kategori", value=service_info.get("category", "Kategori bulunamadı"), inline=False)
         embed.add_field(name="Min - Max", value=f"{service_info['min']} - {service_info['max']}", inline=True)
         embed.add_field(name="Fiyat", value=f"{fiyat:.2f}₺ / 1K", inline=True)
-        embed.set_footer(text="SEA PRIVATE")
+        embed.set_footer(text="SEASMM")
 
         await interaction.response.send_message(embed=embed)
 
