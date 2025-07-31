@@ -68,9 +68,10 @@ class Urun(commands.Cog):
             "📝 Lütfen ürün açıklamasını bu kanala yazınız. 2 dakika içinde yazmazsanız işlem iptal olur.",
             ephemeral=True
         )
+        await interaction.channel.send(f"{interaction.user.mention} Ürün açıklamasını yazman gerekiyor. 2 dakikan var.")
 
         def check(m):
-            return m.author.id == interaction.user.id and (m.channel.id == interaction.channel.id or isinstance(m.channel, discord.DMChannel))
+            return m.author.id == interaction.user.id and m.channel.id == interaction.channel.id
 
         try:
             mesaj = await self.bot.wait_for("message", timeout=120, check=check)
@@ -84,12 +85,16 @@ class Urun(commands.Cog):
             }
             db.save_data()
 
+            print(f"ÜRÜN BAŞARIYLA EKLENDİ: {isim}")
+
             await interaction.followup.send(
                 f"✅ Ürün eklendi: `{isim}`\nKategori: **{kategori}**\nFiyat: **{fiyat}₺ / 1K**\nAçıklama: {aciklama}",
                 ephemeral=True
             )
         except asyncio.TimeoutError:
+            print("KULLANICI AÇIKLAMA GİRMEDİ")
             await interaction.followup.send("⌛ Açıklama girilmedi, işlem iptal edildi.", ephemeral=True)
+            await interaction.channel.send(f"❌ {interaction.user.mention}, açıklama süresi doldu. Ürün ekleme iptal edildi.")
         except Exception as e:
             print(f"[HATA] urun_ekle: {e}")
             await interaction.followup.send("❌ Bir hata oluştu.", ephemeral=True)
