@@ -35,7 +35,7 @@ class Urun(commands.Cog):
                         return s
                 return None
 
-    kanka     @app_commands.command(name="urun_ekle", description="Yeni ürün ekle (Admin)")
+   @app_commands.command(name="urun_ekle", description="Yeni ürün ekle (Admin)")
 @app_commands.describe(
 isim="Ürün ismi",
 servis_id="Servis ID",
