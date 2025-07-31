@@ -82,6 +82,7 @@ class Urun(commands.Cog):
             await interaction.followup.send("⌛ Açıklama girilmedi, işlem iptal edildi.", ephemeral=True)
             return
 
+        # Verilen fiyatı doğrudan kaydet
         db.products[isim] = {
             "service_id": servis_id,
             "fiyat": fiyat,
@@ -91,9 +92,9 @@ class Urun(commands.Cog):
         db.save_data()
 
         await interaction.followup.send(
-            f"✅ Ürün eklendi: {isim}\n"
-            f"Kategori: {kategori}\n"
-            f"Fiyat: {fiyat}₺ / 1K\n"
+            f"✅ Ürün eklendi: `{isim}`\n"
+            f"Kategori: **{kategori}**\n"
+            f"Fiyat: **{fiyat}₺ / 1K**\n"
             f"Açıklama: {aciklama}"
         )
 
@@ -135,10 +136,10 @@ class Urun(commands.Cog):
         db.save_data()
 
         await interaction.response.send_message(
-            f"✅ Ürün güncellendi: {isim}\n"
-            f"Servis ID: {db.products[isim].get('service_id')}\n"
-            f"Fiyat: {db.products[isim].get('fiyat')}₺ / 1K\n"
-            f"Kategori: {db.products[isim].get('kategori')}\n"
+            f"✅ Ürün güncellendi: `{isim}`\n"
+            f"Servis ID: `{db.products[isim].get('service_id')}`\n"
+            f"Fiyat: **{db.products[isim].get('fiyat')}₺ / 1K**\n"
+            f"Kategori: **{db.products[isim].get('kategori')}**\n"
             f"Açıklama: {db.products[isim].get('aciklama')}"
         )
 
