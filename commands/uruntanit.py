@@ -57,17 +57,21 @@ class UrunTanitim(commands.Cog):
             await interaction.response.send_message("❌ Ürün bilgileri LunaSMM'den çekilemedi.", ephemeral=True)
             return
 
-        # Zamlı fiyat gösterme, direkt db'deki fiyatı göster
         embed = discord.Embed(
             title=f"🛒 Ürün Tanıtımı — {urun_id}",
             color=discord.Color.blurple()
         )
-        embed.add_field(name="Ürün Adı", value=service_info["name"], inline=False)
-        embed.add_field(name="Açıklama", value=aciklama, inline=False)
-        embed.add_field(name="Kategori", value=service_info.get("category", "Kategori bulunamadı"), inline=False)
-        embed.add_field(name="Min - Max", value=f"{service_info['min']} - {service_info['max']}", inline=True)
-        embed.add_field(name="Fiyat", value=f"{fiyat:.2f}₺ / 1K", inline=True)
-        embed.set_footer(text="SEASMM")
+        embed.add_field(name="🧾 Ürün Adı", value=service_info["name"], inline=False)
+        embed.add_field(name="📝 Açıklama", value=aciklama, inline=False)
+        embed.add_field(name="📁 Kategori", value=service_info.get("category", "Kategori bulunamadı"), inline=False)
+        embed.add_field(name="🔢 Min - Max", value=f"{service_info['min']} - {service_info['max']}", inline=True)
+        embed.add_field(name="💸 Fiyat", value=f"{fiyat:.2f}₺ / 1K", inline=True)
+        embed.add_field(
+            name="📦 Sipariş Nasıl Verilir?",
+            value="> `/siparis <ürün_id> <adet> <link>` şeklinde sipariş oluşturabilirsiniz.",
+            inline=False
+        )
+        embed.set_footer(text="SEA SMM")
 
         await interaction.response.send_message(embed=embed)
 
